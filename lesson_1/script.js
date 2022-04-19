@@ -6,9 +6,10 @@ const goods = [
 ];
 
 
-const renderGoodsItem = (item) => {
+const renderGoodsItem = (item, img = 'http://placekitten.com/g/160/120') => {
     return `<div class="col-sm-3 my-3">
             <div class="card"">
+            <img src="${img}" class="card-img-top" alt="kitten">
               <div class="card-body">
                 <h1 class="card-title">${item.title}</h1>
                 <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
@@ -19,8 +20,7 @@ const renderGoodsItem = (item) => {
         </div>`;
 };
 
-const renderGoodsList = (items, price=15) => {
-    console.log(price)
+const renderGoodsList = (items) => {
     document.querySelector('.goods-list').innerHTML = items.map(item => renderGoodsItem(item)).join('');
 }
 
