@@ -1,10 +1,11 @@
 const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses'
 
 class GoodsItem {
-    constructor(product_name, price, img = 'http://placekitten.com/g/160/120') {
+    constructor(product_name, price, id, img = 'http://placekitten.com/g/160/120') {
         this.product_name = product_name;
         this.price = price;
         this.img = img
+        this.id = id
     }
 
     render() {
@@ -16,7 +17,7 @@ class GoodsItem {
                 <h1 class="card-title">${this.product_name}</h1>
                 <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
                 <h5>Price: ${this.price} ₽</h5>
-                <a href="#" class="btn btn-primary">Go to item</a>
+                <a href="#" data-id="${this.id}" data-price="${this.price}" data-product_name="${this.product_name}" class="btn btn-primary buy-btn">Buy</a>
               </div>
             </div>
         </div>`)
@@ -34,27 +35,22 @@ class GoodsList {
         })
     }
 
-
-    totalPrice() {
-        return this.goods.reduce((total, item) => total + item.price, 0);
-    }
-
     render() {
         let listHTML = ''
         this.goods.forEach(good => {
-            const goodItem = new GoodsItem(good.product_name, good.price);
+            const goodItem = new GoodsItem(good.product_name, good.price, good.id_product);
             listHTML += goodItem.render()
         });
         document.querySelector('.goods-list').innerHTML = listHTML
+
 
     }
 }
 
 class CartItems {
     constructor() {
-        this.amount = 0
-        this.countGoods = 0
         this.cartItems = []
+
     }
 
 
@@ -62,43 +58,172 @@ class CartItems {
         makeGETRequest(`${API_URL}/getBasket.json`).then((data) => {
             this.amount = data.amount
             this.countGoods = data.countGoods
-            this.cartItems = data.content.map(item => {
-                new CartItem(item.id, item.product_name, item.price, item.quantity)
+
+            this.cartItems = data.contents.map(item => {
+                return new CartItem(item.id_product, item.product_name, item.price, item.quantity)
             })
+            this.render()
+            this._init()
+            this._initRemove()
         })
     }
 
+
     addCartItem(item) {
+
         makeGETRequest(`${API_URL}/addToBasket.json`).then((data) => {
             if (data.result === 1) {
-                this.amount += item.price
-                this.countGoods += item.quantity
-                this.cartItems.push(item)
+                let itemsId = this.cartItems.map(item => +item.id)
+                if (itemsId.includes(item.id)) {
+                    this.cartItems.filter(element => element.id === item.id)[0].quantity += item.quantity
+                } else {
+                    this.cartItems.push(item)
+                }
+                this.render()
+                this._initRemove(item.id)
+
+
             }
         }).catch(error => console.log(error))
     }
 
-    removeCartItem(item) {
+    removeCartItem(item_id) {
         makeGETRequest(`${API_URL}/deleteFromBasket.json`).then((data) => {
             if (data.result === 1) {
-                const index = this.cartItems.map(item => item.id).indexOf(item.id);
+
+
+                const index = this.cartItems.map(item => +item.id).indexOf(+item_id);
+
                 if (index > -1) {
                     this.cartItems.splice(index, 1)
-                    this.amount -= item.price
-                    this.countGoods -= item.quantity
                 }
+                document.getElementById(`main-cart-item-${item_id}`).remove()
+                this._initRemove()
             }
         })
     }
 
+    getPriceForItem(item_id) {
+        let filteredItem = this.cartItems.filter(item => item.id === item_id)[0]
+        return filteredItem.price * filteredItem.quantity
+
+    }
+
+
+    render() {
+        if (this.cartItems.length > 0) {
+            document.getElementById('drop-cart').innerHTML = this.cartItems.map(item => item.render(this)).join('')
+        } else {
+            document.getElementById('drop-cart').innerHTML = ''
+        }
+
+
+    }
+
+    _init() {
+        console.log(document.querySelectorAll('.buy-btn'))
+        document.querySelectorAll('.buy-btn').forEach((element) => {
+            element.addEventListener('click', (e) => {
+                let targetDataset = e.target.dataset;
+                this.addCartItem(new CartItem(
+                        targetDataset['id'],
+                        targetDataset['product_name'],
+                        targetDataset['price'],
+                        1
+                    )
+                )
+            })
+        })
+
+
+    }
+
+    _initRemove(item_id = null) {
+        if (!item_id) {
+            document.querySelectorAll('.btn-remove').forEach((element) => {
+                element.addEventListener('click', (e) => {
+                    this.removeCartItem(e.target.dataset['id'])
+                })
+            })
+        } else {
+            let filteredItem = [...document.querySelectorAll('.btn-remove')].filter(element => +element.dataset['id'] === +item_id)[0]
+
+            filteredItem.addEventListener('click', (e) => {
+                this.removeCartItem(e.target.dataset['id'])
+            })
+        }
+        this._initChange()
+    }
+
+    changeItemQuantity(item_id, quantity) {
+
+        this.cartItems.filter(item => +item.id === +item_id)[0].quantity = quantity
+        this.render()
+        this._initChange()
+        this._initRemove()
+    }
+
+    _initChange() {
+        document.querySelectorAll('.plus').forEach((element) => {
+            element.addEventListener('click', (e) => {
+                let input = e.target.parentNode.querySelector('input[type=number]')
+                console.log(input.dataset['id'])
+                this.changeItemQuantity(input.dataset['id'], input.value)
+            })
+        })
+        document.querySelectorAll('.minus').forEach((element) => {
+            element.addEventListener('click', (e) => {
+                let input = e.target.parentNode.querySelector('input[type=number]')
+                this.changeItemQuantity(input.dataset['id'], input.value)
+            })
+        })
+    }
+
+
 }
 
 class CartItem {
-    constructor(id, product_name, price, quantity) {
-        this.id = id
+    constructor(id, product_name, price, quantity, img = 'http://placekitten.com/g/160/120') {
+        this.id = +id
         this.product_name = product_name
-        this.price = price
-        this.quantity = quantity
+        this.price = +price
+        this.quantity = +quantity
+        this.img = img
+    }
+
+    getFullPrice(obj) {
+        return obj.getPriceForItem(this.id)
+    }
+
+    render(obj) {
+
+
+        return (`
+                    <li id="main-cart-item-${this.id}">
+                        <div class="cart-item" data-id="${this.id}">
+                            <div class="product-bio">
+                                <img src="${this.img}" alt="Some image">
+                                <div class="product-desc">
+                                    <p class="product-title">${this.product_name}</p>
+                                    <div class="def-number-input number-input safari_only">
+                                        <button onclick="this.parentNode.querySelector('input[type=number]').stepDown()"
+                                                class="minus" data-id="${this.id}"></button>
+                                        <label>
+                                            <input class="quantity" data-id="${this.id}" id="quantity-${this.id}" min="1" name="quantity" value="${this.quantity}" type="number">
+                                        </label>
+                                        <button onclick="this.parentNode.querySelector('input[type=number]').stepUp()"
+                                                class="plus" data-id="${this.id}"></button>
+                                    </div>
+                                    <p class="product-single-price">Цена товара: ${this.price}₽</p>
+                                </div>
+                            </div>
+                            <div class="right-block">
+                                <p class="product-price">Всего: ${this.getFullPrice(obj)}₽</p>
+                                <button class="btn btn-danger btn-remove" data-id="${this.id}">×</button>
+                            </div>
+                        </div>
+                    </li>        
+        `)
     }
 }
 
