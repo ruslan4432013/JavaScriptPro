@@ -225,6 +225,6 @@ img {
 
 .search_line {
     display: flex;
-
-
+    margin-left: auto;
+    margin-right: 18px;
 }
