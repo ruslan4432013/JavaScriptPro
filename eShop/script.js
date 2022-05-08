@@ -27,17 +27,26 @@ class GoodsItem {
 class GoodsList {
     constructor() {
         this.goods = []
+        this.filteredGoods = []
     }
 
     fetchGoods() {
         return makeGETRequest(`${API_URL}/catalogData.json`).then((data) => {
             this.goods = data
+            this.filteredGoods = data
         })
     }
 
+    filterGoods(value) {
+        const regexp = new RegExp(value, 'i');
+        this.filteredGoods = this.goods.filter(good => regexp.test(good.product_name))
+        this.render()
+    }
+
+
     render() {
         let listHTML = ''
-        this.goods.forEach(good => {
+        this.filteredGoods.forEach(good => {
             const goodItem = new GoodsItem(good.product_name, good.price, good.id_product);
             listHTML += goodItem.render()
         });
@@ -237,3 +246,10 @@ list.fetchGoods().then(() => list.render())
 
 const mainCart = new CartItems()
 mainCart.fetchCart()
+
+let searchButton = document.getElementById('searchBtn')
+let searchInput = document.getElementById('searchInput')
+searchButton.addEventListener('click', (e) => {
+    const value = searchInput.value
+    list.filterGoods(value)
+})
