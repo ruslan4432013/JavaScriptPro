@@ -11,14 +11,14 @@
     <header>
         <div class="logo">E-shop</div>
         <div class="cart">
-            <form action="#" class="search-form">
+            <form action="#" @submit.prevent="filter" class="search-form">
                 <input type="text" class="search-field" v-model="userSearch">
-                <button class="btn-search" @click="filter(userSearch)">
+                <button class="btn-search">
                     <i class="fas fa-search"></i>
                 </button>
             </form>
             <button class="btn-cart" type="button" @click="show = !show">Корзина</button>
-            <div class="cart-block" v-if="show">
+            <div class="cart-block" v-show="show">
                 <div v-for="item in cartItems" class="cart-item" :data-id="item.id_product">
                     <div class="product-bio">
                         <img src="https://via.placeholder.com/50x100/" alt="Some image">
@@ -30,7 +30,7 @@
                     </div>
                     <div class="right-block">
                         <p class="product-price">$ {{ item.quantity * item.price }}</p>
-                        <button class="del-btn" :data-id="item.id_product">×</button>
+                        <button class="del-btn" @click="remove(item)" :data-id="item.id_product">×</button>
                     </div>
                 </div>
             </div>
