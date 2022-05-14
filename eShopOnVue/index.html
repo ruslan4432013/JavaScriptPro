@@ -8,52 +8,30 @@
 </head>
 <body>
 <div id="app">
+    <error-message :error="error"></error-message>
     <header>
         <div class="logo">E-shop</div>
         <div class="cart">
-            <form action="#" @submit.prevent="filter" class="search-form">
-                <input type="text" class="search-field" v-model="userSearch">
-                <button class="btn-search">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
-            <button class="btn-cart" type="button" @click="show = !show">Корзина</button>
-            <div class="cart-block" v-show="show">
-                <div v-for="item in cartItems" class="cart-item" :data-id="item.id_product">
-                    <div class="product-bio">
-                        <img src="https://via.placeholder.com/50x100/" alt="Some image">
-                        <div class="product-desc">
-                            <p class="product-title">{{ item.product_name }}</p>
-                            <p class="product-quantity">Quantity: {{ item.quantity }}</p>
-                            <p class="product-single-price">$ {{ item.price }} each</p>
-                        </div>
-                    </div>
-                    <div class="right-block">
-                        <p class="product-price">$ {{ item.quantity * item.price }}</p>
-                        <button class="del-btn" @click="remove(item)" :data-id="item.id_product">×</button>
-                    </div>
-                </div>
-            </div>
+            <search-line></search-line>
+            <button class="btn-cart" type="button" @click="showCart = !showCart">Корзина</button>
+
+
+            <cart :cart-items="cartItems"
+                  :img="imgCart"
+                  :visibility="showCart"></cart>
+
         </div>
     </header>
     <main>
-        <div v-if="filtered.length > 0" class="products">
-            <div class="product-item" v-for="product of filtered" :key="product.id_product">
-                <img :src="imgCatalog" alt="Some img">
-                <div class="desc">
-                    <h3>{{product.product_name}}</h3>
-                    <p>{{product.price}} $</p>
-                    <button class="buy-btn" @click="addProduct(product)">Купить</button>
-                </div>
-            </div>
-        </div>
-        <h1 class="notFound" v-else>Товаров не найдено</h1>
+        <products :products="filtered" :img="imgProduct" @add-product="addProduct"></products>
     </main>
 </div>
-<script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js"
-        integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP"
-        crossorigin="anonymous"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="js/ErrorComponent.js"></script>
+<script src="js/SearchComponent.js"></script>
+<script src="js/CartComponent.js"></script>
+<script src="js/ProductComponent.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
