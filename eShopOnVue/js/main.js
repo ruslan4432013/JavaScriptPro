@@ -49,7 +49,7 @@ const app = new Vue({
         },
 
         remove(product) {
-            this.getJson(`${API}/deleteFromBasket.json`)
+            this.deleteJson(`${API}/deleteFromBasket.json`)
                 .then(data => {
                     if (data.result === 1) {
                         if (product.quantity > 1) {
