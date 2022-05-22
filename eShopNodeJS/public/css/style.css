@@ -197,3 +197,8 @@ img {
     font-weight: bold;
 }
 
+.productImage {
+    height: 150px;
+    width: 200px;
+    object-fit: cover;
+}
