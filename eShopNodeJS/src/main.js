@@ -1,9 +1,19 @@
-const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
+import errorComponent from "./ErrorComp";
+import cartComponent from "./CartComponent";
+import filterComponent from "./FilterComp";
+import productsComponent from "./ProductComponent";
+import Vue from './vue'
 
 const app = new Vue({
     el: '#app',
     data: {
         userSearch: '',
+    },
+    components: {
+        'filter-el': filterComponent,
+        'error': errorComponent,
+        'cart': cartComponent,
+        'products': productsComponent
     },
     methods: {
         getJson(url) {
