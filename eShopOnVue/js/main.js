@@ -8,9 +8,11 @@ const app = new Vue({
         products: [],
         filtered: [],
         cartItems: [],
-        imgCatalog: 'https://via.placeholder.com/200x150',
+        imgProduct: 'https://via.placeholder.com/200x150',
+        imgCart: 'https://via.placeholder.com/50x100',
         userSearch: '',
-        show: false
+        showCart: false,
+        error: false
     },
     methods: {
         filter() {
@@ -20,9 +22,13 @@ const app = new Vue({
 
         getJson(url) {
             return fetch(url)
-                .then(result => result.json())
+                .then(result => {
+                    this.error = false
+                    return result.json()
+                })
                 .catch(error => {
                     console.log(error);
+                    this.error = true
                 })
         },
 
@@ -43,7 +49,7 @@ const app = new Vue({
         },
 
         remove(product) {
-            this.getJson(`${API}/deleteFromBasket.json`)
+            this.deleteJson(`${API}/deleteFromBasket.json`)
                 .then(data => {
                     if (data.result === 1) {
                         if (product.quantity > 1) {
@@ -74,7 +80,7 @@ const app = new Vue({
 
         this.getJson(`${API + this.cartUrl}`)
             .then(data => {
-                this.cartItems = data.contents
+                this.cartItems = [...data.contents]
                 console.log(this.cartItems)
             })
     }
